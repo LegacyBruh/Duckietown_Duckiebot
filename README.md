@@ -1,5 +1,5 @@
 <h1>Duckietown Duckiebot named Shelby</h1>
-This README file pis about Duckietown Duckiebot. The Duckiebot is a small mobile robot designed for autonomous navigation and computer vision applications in the context of the Duckietown project.
+This README file is about Duckietown Duckiebot. The Duckiebot is a small mobile robot designed for autonomous navigation and computer vision applications in the context of the Duckietown project.
 <h2>Hardware</h2>
 The Duckiebot consists of the following hardware components:
 <br></br>
