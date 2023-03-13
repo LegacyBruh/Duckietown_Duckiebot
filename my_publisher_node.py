@@ -17,7 +17,10 @@ class MyPublisherNode(DTROS):
         # initialize parent class
         super(MyPublisherNode, self).__init__(node_name=node_name, node_type=NodeType.GENERIC)
 
+        
         #----------------------------PUBLISHERS AND SUBSCRIBERS--------------------------------------------------------------
+        
+        
         self.pub = rospy.Publisher('/shelby/wheels_driver_node/wheels_cmd', WheelsCmdStamped, queue_size=10)
         self.tof = rospy.Subscriber('/shelby/front_center_tof_driver_node/range', Range, self.callback)
         self.rwheel = rospy.Subscriber('/shelby/right_wheel_encoder_node/tick', WheelEncoderStamped ,self.rightwheel)
@@ -25,7 +28,10 @@ class MyPublisherNode(DTROS):
         self.seqLeft = rospy.Subscriber('/shelby/left_wheel_encoder_node/tick', WheelEncoderStamped, self.time_leftwheel)
         self.seqRight = rospy.Subscriber('/shelby/right_wheel_encoder_node/tick', WheelEncoderStamped ,self.time_rightwheel)
 
+        
         #--------------------------------------------VARIABLES----------------------------------------------------------------
+        
+        
         self.bus = SMBus(12)
         self.range = 1
         self.right = 0
@@ -47,7 +53,10 @@ class MyPublisherNode(DTROS):
         self.wtraveltmp = 0
         self.distance_cm = 0
         self.wtravel = 0
+        
+        
         #---------------------------------------------------------------------------------------------------------------------
+    
     
     def callback(self, data):
         self.range = data.range
@@ -57,6 +66,31 @@ class MyPublisherNode(DTROS):
 
     def leftwheel(self, data):
         self.left = data.data
+        
+        
+        #-------------------------------------OBSTACLE AVOIDANCE--------------------------------------------------------------
+        
+        
+    def obstacle():
+        while self.distance_cm < 35: #if obstacle detected within 35cm range, robot turns right
+            speed.vel_left = 0.33
+            speed.vel_right = 0.05
+            self.pub.publish(speed)
+            self.distance_cm = round(self.range*100, 1)
+        time.sleep(0.2)
+        while self.wtraveltmp < 30: #robot travels straight for 30cm
+            speed.vel_left = 0.3
+            speed.vel_right = 0.3
+            self.pub.publish(speed)
+            self.wtraveltmp = self.wtraveltmp + self.wtravel
+        time.sleep(0.2)
+        speed.vel_left = 0.05 #robot turns left
+        speed.vel_right = 0.4
+        self.pub.publish(speed)
+        time.sleep(1.2)
+        speed.vel_left = 0.3  #robot turns right
+        speed.vel_right = 0.05
+        time.sleep(0.5)
 
     def on_shutdown(self):
         speed.vel_left = 0
@@ -95,34 +129,14 @@ class MyPublisherNode(DTROS):
             self.distance_cm = round(self.range*100, 1) #distance detected by TOF sensor (cm)
 
             
-            #-------------------------------------OBSTACLE AVIODANCE------------------------------------------------------------
+            #-------------------------------------OBSTACLE AVIODANCE CALLOUT------------------------------------------------------------
             
-            
-            def obstacle():
-                while self.distance_cm < 35: #if obstacle detected within 35cm range, robot turns right
-                    speed.vel_left = 0.33
-                    speed.vel_right = 0.05
-                    self.pub.publish(speed)
-                    self.distance_cm = round(self.range*100, 1)
-                time.sleep(0.2)
-                while self.wtraveltmp < 30: #robot travels straight for 30cm
-                    speed.vel_left = 0.3
-                    speed.vel_right = 0.3
-                    self.pub.publish(speed)
-                    self.wtraveltmp = self.wtraveltmp + self.wtravel
-                time.sleep(0.2)
-                speed.vel_left = 0.05 #robot turns left
-                speed.vel_right = 0.4
-                self.pub.publish(speed)
-                time.sleep(1.2)
-                speed.vel_left = 0.3  #robot turns right
-                speed.vel_right = 0.05
-                time.sleep(0.5)
 
             if self.distance_cm <= 35:
                 obstacle()
 
-            #------------------------------------------PID-CONTROLLER----------------------------------------------------------------------------------
+                
+            #------------------------------------------PID-CONTROLLER--------------------------------------------------------------------
             
                 
             readings = [] #list of line sensor readings within 1-8 range
